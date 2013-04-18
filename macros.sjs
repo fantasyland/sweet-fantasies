@@ -3,6 +3,6 @@ macro $semigroup {
     $x
   }
   case ($x + $rest ...) => {
-    $x.concat(semigroup($rest ...))
+    $x.concat($semigroup($rest ...))
   }
 }
