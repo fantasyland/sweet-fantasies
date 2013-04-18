@@ -93,7 +93,54 @@ macro $do {
 
 */
 macro $ifelsedo {
+  case { if $e:expr return $left:expr else return $right:expr } => {
+    if ($e) { return $left } else { return $right }
+  }
   case { if $e:expr $do { $left ... } else $do { $right ... } } => {
     if ($e) { return $do { $left ... } } else { return $do { $right ... } }
   }
+  case { if $e:expr return $left:expr else $rest ... } => {
+    if ($e) { return $left } else $ifelsedo { $rest ... }
+  }
+  case { if $e:expr $do { $left ... } else $rest ... } => {
+    if ($e) { return $do { $left ... } } else $ifelsedo { $rest ... }
+  }
+}
+
+var ifdo_elsedo = $do {
+  a <- foo
+  if (a == 1) $do {
+    b <- bar
+    return b
+  } else $do {
+    c <- quux
+    return c
+  }
+}
+
+var ifdo_elseifdo_elsedo = $do {
+  a <- foo
+  if (a == 1) $do {
+    b <- bar
+    return b
+  } else if (a == 2) $do {
+    c <- baz
+    return c
+  } else $do {
+    d <- quux
+    return d
+  }
+}
+
+var if_else = $do {
+  a <- foo
+  if (a == 1) return bar else
+              return quux
+}
+
+var if_elseif_else = $do {
+  a <- foo
+  if (a == 1) return bar else
+  if (a == 2) return baz else
+              return quux
 }
