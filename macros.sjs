@@ -35,10 +35,17 @@ macro $semigroup {
      return x * y * z * k
    }
 
+   Variable binding is optional if monad is executed just for its effects:
+
+   $do {
+     putStrLn("Hello friend! What's your name?")
+     name <- readLine()
+     return name
+   }
+
    TODO:
   
     - do not require last expression to be 'return'
-    - do not require variable binding (eg. do { putStr "Hello" })
     - add support for nested do blocks
 
 */
@@ -56,6 +63,11 @@ macro $do {
   }
   case { $a:ident <- $ma:expr $rest ... } => {
     $ma.chain(function($a) {
+      return $do { $rest ... }
+    });
+  }
+  case { $ma:expr $rest ... } => {
+    $ma.chain(function() {
       return $do { $rest ... }
     });
   }
