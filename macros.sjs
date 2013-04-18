@@ -61,6 +61,11 @@ macro $do {
       return $b;
     });
   }
+  case { $ma:expr return $b:expr } => {
+    $ma.map(function() {
+      return $b;
+    });
+  }
   case { $a:ident <- $ma:expr $rest ... } => {
     $ma.chain(function($a) {
       return $do { $rest ... }
