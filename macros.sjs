@@ -42,6 +42,9 @@ macro $semigroup {
     - add support for nested do blocks
 
 */
+macro $ifdo {
+}
+
 macro $do {
   case { $x:ident = $y:expr $rest ... } => {
     function() {
@@ -54,9 +57,48 @@ macro $do {
       return $b;
     });
   }
+  // See `$ifelsedo`.
+  case { $a:ident <- $ma:expr if $rest ... } => {
+    $ma.map(function($a) {
+      $ifelsedo { if $rest ... }
+    });
+  }
   case { $a:ident <- $ma:expr $rest ... } => {
     $ma.chain(function($a) {
       return $do { $rest ... }
     });
+  }
+}
+
+/*
+   $do {
+     a <- foo
+     if (a == 1) $do {
+       b <- bar
+       return b
+     } else $do {
+       c <- quux
+       return b
+     }
+   }
+
+   foo.chain(function (a$2) {
+     return bar.map(function (b$5) {
+       if (a$2 == a$2) {
+         return baz.map(function (c$9) {
+           return c$9;
+         });
+       } else {
+         return quux.map(function (d$12) {
+           return d$12;
+         });
+       }
+     });
+   });
+
+*/
+macro $ifelsedo {
+  case { if $e:expr $do { $left ... } else $do { $right ... } } => {
+    if ($e) { return $do { $left ... } } else { return $do { $right ... } }
   }
 }
