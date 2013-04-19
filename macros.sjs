@@ -66,6 +66,11 @@ macro $do {
       return $b;
     });
   }
+  case { $a:ident <- $ma:expr if $rest ... } => {
+    $ma.map(function($a) {
+      $ifelsedo { if $rest ... }
+    });
+  }
   case { $a:ident <- $ma:expr $rest ... } => {
     $ma.chain(function($a) {
       return $do { $rest ... }
@@ -75,5 +80,57 @@ macro $do {
     $ma.chain(function() {
       return $do { $rest ... }
     });
+  }
+}
+
+/*
+   $do {
+     a <- foo
+     if (a == 1) $do {
+       b <- bar
+       return b
+     } else $do {
+       c <- quux
+       return c
+     }
+   }
+
+   foo.map(function (a$2) {
+     if (a$2 == 1) {
+       return bar.map(function (b$6) {
+         return b$6;
+       });
+     } else {
+       return quux.map(function (c$9) {
+         return c$9;
+       });
+     }
+   });
+
+*/
+macro $ifelsedo {
+  case { if $e:expr return $left:expr else return $right:expr } => {
+    if ($e) { return $left }
+    else    { return $right }
+  }
+  case { if $e:expr $do { $left ... } else return $right:expr } => {
+    if ($e) { return $do { $left ... } }
+    else    { return $right }
+  }
+  case { if $e:expr return $left:expr else $do { $right ... } } => {
+    if ($e) { return $left }
+    else    { return $do { $right ... } }
+  }
+  case { if $e:expr $do { $left ... } else $do { $right ... } } => {
+    if ($e) { return $do { $left ... } }
+    else    { return $do { $right ... } }
+  }
+  case { if $e:expr return $left:expr else $rest ... } => {
+    if ($e) { return $left }
+    else $ifelsedo { $rest ... }
+  }
+  case { if $e:expr $do { $left ... } else $rest ... } => {
+    if ($e) { return $do { $left ... } }
+    else $ifelsedo { $rest ... }
   }
 }
