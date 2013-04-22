@@ -14,6 +14,10 @@ Id.prototype.map = function(f) {
   return new Id(f(this.value))
 }
 
+Id.prototype.ap = function(b) {
+  return new Id(this.value(b.value))
+}
+
 Id.prototype.chain = function(f) {
   return f(this.value)
 }
@@ -90,5 +94,30 @@ describe("do-notation", function() {
     }
     expect(sum3.value).to.equal(40)
 */
+  })
+})
+
+describe("ap-notation", function() {
+  it("applies applicatives", function() {
+    var f = Id.of(function(x) { return function(y) { return x+y }})
+    var x = Id.of(10)
+    var y = Id.of(20)
+    var sum = $ap f(x, y)
+    expect(sum.value).to.equal(30)
+  })
+
+  it("supports nesting", function() {
+    var f = Id.of(function(x) { return function(y) { return x+y }})
+    var x = Id.of(10)
+    var y = Id.of(20)
+    var sum = $ap f(x, $ap f(x, y))
+    expect(sum.value).to.equal(40)
+  })
+
+  it("supports inline creation of applicative", function() {
+    var x = Id.of(10)
+    var y = Id.of(20)
+    var sum = $ap (Id.of(function(x) { return function(y) { return x+y }}))(x, y)
+    expect(sum.value).to.equal(30)
   })
 })
