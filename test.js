@@ -65,7 +65,7 @@ describe("do-notation", function() {
     expect(sum.value).to.equal(30)
   })
 
-  it("supports if-expressions", function() {
+  it("supports simple if-expressions", function() {
     var sum1 = $do {
       x <- Id.of(10)
       y <- Id.of(20)
@@ -79,8 +79,10 @@ describe("do-notation", function() {
       if (x > 10) return x + y else return x - y
     }
     expect(sum2.value).to.equal(-10)
+  })
 
-    var sum3 = $do {
+  it("supports if-expressions", function() {
+    var sum1 = $do {
       x <- Id.of(10)
       y <- Id.of(20)
       if (x == 10) $do {
@@ -91,9 +93,9 @@ describe("do-notation", function() {
         return x - z
       }
     }
-    expect(sum3.value).to.equal(40)
+    expect(sum1.value).to.equal(40)
 
-    var sum4 = $do {
+    var sum2 = $do {
       x <- Id.of(10)
       y <- Id.of(20)
       return if (x == 10) $do {
@@ -104,17 +106,19 @@ describe("do-notation", function() {
         return x - z
       }
     }
-    expect(sum4.value.value).to.equal(40)
+    expect(sum2.value.value).to.equal(40)
+  })
 
-    var sum5 = $do {
+  it("supports if-expressions after non-bound expression", function() {
+    var sum1 = $do {
       x <- Id.of(10)
       y <- Id.of(20)
       Id.of(1000)
       if (x == 10) return x + y else return x - y
     }
-    expect(sum5.value).to.equal(30)
+    expect(sum1.value).to.equal(30)
 
-    var sum6 = $do {
+    var sum2 = $do {
       x <- Id.of(10)
       y <- Id.of(20)
       Id.of(1000)
@@ -126,7 +130,7 @@ describe("do-notation", function() {
         return x - z
       }
     }
-    expect(sum6.value).to.equal(40)
+    expect(sum2.value).to.equal(40)
   })
 
   it("supports nested do-blocks", function() {
