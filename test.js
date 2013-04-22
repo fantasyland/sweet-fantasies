@@ -80,7 +80,6 @@ describe("do-notation", function() {
     }
     expect(sum2.value).to.equal(-10)
 
-/*  FIXME type of 'sum3' is Id (Id Int), should be Id Int
     var sum3 = $do {
       x <- Id.of(10)
       y <- Id.of(20)
@@ -93,7 +92,41 @@ describe("do-notation", function() {
       }
     }
     expect(sum3.value).to.equal(40)
-*/
+
+    var sum4 = $do {
+      x <- Id.of(10)
+      y <- Id.of(20)
+      return if (x == 10) $do {
+        z <- Id.of(30)
+        return x + z 
+      } else $do {
+        z <- Id.of(40)
+        return x - z
+      }
+    }
+    expect(sum4.value.value).to.equal(40)
+
+    var sum5 = $do {
+      x <- Id.of(10)
+      y <- Id.of(20)
+      Id.of(1000)
+      if (x == 10) return x + y else return x - y
+    }
+    expect(sum5.value).to.equal(30)
+
+    var sum6 = $do {
+      x <- Id.of(10)
+      y <- Id.of(20)
+      Id.of(1000)
+      if (x == 10) $do {
+        z <- Id.of(30)
+        return x + z 
+      } else $do {
+        z <- Id.of(40)
+        return x - z
+      }
+    }
+    expect(sum6.value).to.equal(40)
   })
 })
 

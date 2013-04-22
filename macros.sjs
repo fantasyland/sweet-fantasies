@@ -61,13 +61,35 @@ macro $do {
       return $b;
     });
   }
+  case { $a:ident <- $ma:expr return if $rest ... } => {
+    $ma.map(function($a) {
+      $ifelsedo { if $rest ... }
+    });
+  }
   case { $ma:expr return $b:expr } => {
     $ma.map(function() {
       return $b;
     });
   }
-  case { $a:ident <- $ma:expr if $rest ... } => {
+  case { $a:ident <- $ma:expr if $e:expr return $left:expr else return $right:expr } => {
     $ma.map(function($a) {
+      if ($e) { return $left }
+      else    { return $right }
+    });
+  }
+  case { $ma:expr if $e:expr return $left:expr else return $right:expr } => {
+    $ma.map(function() {
+      if ($e) { return $left }
+      else    { return $right }
+    });
+  }
+  case { $a:ident <- $ma:expr if $rest ... } => {
+    $ma.chain(function($a) {
+      $ifelsedo { if $rest ... }
+    });
+  }
+  case { $ma:expr if $rest ... } => {
+    $ma.chain(function() {
       $ifelsedo { if $rest ... }
     });
   }
@@ -109,10 +131,6 @@ macro $do {
 
 */
 macro $ifelsedo {
-  case { if $e:expr return $left:expr else return $right:expr } => {
-    if ($e) { return $left }
-    else    { return $right }
-  }
   case { if $e:expr $do { $left ... } else return $right:expr } => {
     if ($e) { return $do { $left ... } }
     else    { return $right }
