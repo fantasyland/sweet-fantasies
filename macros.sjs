@@ -46,7 +46,6 @@ macro $semigroup {
    TODO:
   
     - do not require last expression to be 'return'
-    - add support for nested do blocks
 
 */
 macro $do {
@@ -97,6 +96,22 @@ macro $do {
     $ma.chain(function($a) {
       return $do { $rest ... }
     });
+  }
+  case { $a:ident <- $do { $doBlock ... } return $b:expr } => {
+    function() {
+      var ma = $do { $doBlock ... }
+      return ma.map(function($a) {
+        return $b
+      });
+    }()
+  }
+  case { $a:ident <- $do { $doBlock ... } $rest ... } => {
+    function() {
+      var ma = $do { $doBlock ... }
+      return ma.chain(function($a) {
+        return $do { $rest ... }
+      });
+    }()
   }
   case { $ma:expr $rest ... } => {
     $ma.chain(function() {

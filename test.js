@@ -128,6 +128,29 @@ describe("do-notation", function() {
     }
     expect(sum6.value).to.equal(40)
   })
+
+  it("supports nested do-blocks", function() {
+    var sum1 = $do {
+      x <- Id.of(10)
+      y <- $do {
+        z <- Id.of(30)
+        return x + z
+      }
+      return x + y
+    }
+    expect(sum1.value).to.equal(50)
+
+    var sum2 = $do {
+      x <- Id.of(10)
+      y <- $do {
+        z <- Id.of(30)
+        return x + z
+      }
+      z <- Id.of(40)
+      return x + y + z
+    }
+    expect(sum2.value).to.equal(90)
+  })
 })
 
 describe("ap-notation", function() {
