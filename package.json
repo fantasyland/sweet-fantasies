@@ -2,11 +2,7 @@
   "name": "sweet-fantasies",
   "description": "sweet.js macros for Fantasy Land compatible structures.",
   "version": "0.0.1",
-  "devDependencies": {
-    "expect.js": "~0.1.2",
-    "mocha": "~1.3.2",
-    "shelljs": "0.0.6"
-  },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git://github.com/pufuwozu/sweet-fantasies.git"
@@ -16,5 +12,21 @@
     "macros",
     "javascript"
   ],
-  "license": "MIT"
+  "scripts": {
+    "test": "grunt"
+  },
+  "devDependencies": {
+    "grunt-cli": "0.1.9",
+    "grunt": "0.4.x",
+    "grunt-rigger": "0.5.x",
+    "grunt-contrib-concat": "0.3.0",
+    "grunt-contrib-jshint": "0.6.x",
+    "grunt-contrib-nodeunit": "0.2.0",
+    "shelljs": "0.2.x",
+    "sweet.js": "0.2.x",
+    "fantasy-check": "0.x.x",
+    "fantasy-identities": "0.x.x",
+    "fantasy-options": "0.x.x",
+    "fantasy-combinators": "0.x.x"
+  }
 }
