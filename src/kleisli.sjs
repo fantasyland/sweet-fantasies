@@ -20,16 +20,30 @@
 
 */
 macro $kleisli {
-    case {_ ($x:ident (,) ...) > $m:expr} => {
+    case {_ ($x:expr >=> $e ...) > $y:expr $rest ... } => {
         return #{
-            $m $(.chain($x)) ...
+            function(a) {
+                return $x(a) $kleisli {$e ...}
+            }($y)
+            $rest ...
         }
     }
-    case {_ ($x:ident (,) ...)} => {
+    case {_ ($x:expr >=> $e ...) $rest ... } => {
         return #{
-            function(m) {
-                return m $(.chain($x)) ...
+            function(a) {
+                return $x(a) $kleisli {$e ...}
             }
+            $rest ...
+        }
+    }
+    case {_ {$x >=> $y ...}} => {
+        return #{
+            .chain($x) $kleisli {$y ...}
+        }
+    }
+    case {_ {$x}} => {
+        return #{
+            .chain($x)
         }
     }
 }
