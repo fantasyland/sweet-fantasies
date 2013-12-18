@@ -25,6 +25,18 @@ exports.donotation = {
         },
         [String, String]
     ),
+    'supports var-bindings as tail': λ.check(
+        function(a, b) {
+            var sum = $do {
+                x <- Identity.of(a)
+                y <- Identity.of(b)
+                k = 'do'
+                return x + y + k
+            }
+            return sum.x === a + b + 'do';
+        },
+        [String, String]
+    ),
     'binding name is optional': λ.check(
         function(a, b) {
             var sum = $do {
