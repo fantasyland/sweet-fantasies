@@ -60,12 +60,20 @@ macro $do {
             }()
         };
     }
-    case {_ {$x:ident = $y:expr $rest ... }} => {
+    case {_ {var $x:ident = $y:expr $rest ... }} => {
         return #{
             function() {
                 var $x = $y;
                 return $do { $rest ... }
             }()
+        };
+    }
+    case {_ {$a:ident <- $ma:expr var $($x:ident = $y:expr) (var) ... return $b:expr }} => {
+        return #{
+            $ma.map(function($a) {
+                $(var $x = $y;) ...
+                return $b;
+            });
         };
     }
     case {_ {$a:ident <- $ma:expr return $b:expr }} => {

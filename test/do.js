@@ -17,7 +17,7 @@ exports.donotation = {
         function(a, b) {
             var sum = $do {
                 x <- Identity.of(a)
-                k = 'do'
+                var k = 'do'
                 y <- Identity.of(b)
                 return x + y + k
             }
@@ -30,10 +30,23 @@ exports.donotation = {
             var sum = $do {
                 x <- Identity.of(a)
                 y <- Identity.of(b)
-                k = 'do'
+                var k = 'do'
                 return x + y + k
             }
             return sum.x === a + b + 'do';
+        },
+        [String, String]
+    ),
+    'supports multiple var-bindings as tail': λ.check(
+        function(a, b) {
+            var sum = $do {
+                x <- Identity.of(a)
+                y <- Identity.of(b)
+                var k = 'do'
+                var l = 'done'
+                return x + y + k + l
+            }
+            return sum.x === a + b + 'do' + 'done';
         },
         [String, String]
     ),
