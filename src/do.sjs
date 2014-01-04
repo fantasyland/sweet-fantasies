@@ -40,6 +40,17 @@
 
 */
 macro $do {
+    case {_ {$a:ident <- $do { $doBlock ... } var $($x:ident = $y:expr) (var) ... return $b:expr }} => {
+        return #{
+            function() {
+                var ma = $do { $doBlock ... }
+                return ma.map(function($a) {
+                    $(var $x = $y;) ...
+                    return $b
+                });
+            }()
+        };
+    }
     case {_ {$a:ident <- $do { $doBlock ... } return $b:expr }} => {
         return #{
             function() {
@@ -60,10 +71,10 @@ macro $do {
             }()
         };
     }
-    case {_ {var $x:ident = $y:expr $rest ... }} => {
+    case {_ {var $($x:ident = $y:expr) (var) ... $rest ... }} => {
         return #{
             function() {
-                var $x = $y;
+                $(var $x = $y;) ...
                 return $do { $rest ... }
             }()
         };
@@ -83,10 +94,26 @@ macro $do {
             });
         };
     }
+    case {_ {$a:ident <- $ma:expr var $($x:ident = $y:expr) (var) ... return if $rest ...}} => {
+        return #{
+            $ma.map(function($a) {
+                $(var $x = $y;) ...
+                $ifelsedo { if $rest ... }
+            });
+        };
+    }
     case {_ {$a:ident <- $ma:expr return if $rest ...}} => {
         return #{
             $ma.map(function($a) {
                 $ifelsedo { if $rest ... }
+            });
+        };
+    }
+    case {_ {$ma:expr var $($x:ident = $y:expr) (var) ... return $b:expr}} => {
+        return #{
+            $ma.map(function() {
+                $(var $x = $y;) ...
+                return $b;
             });
         };
     }
@@ -97,25 +124,71 @@ macro $do {
             });
         };
     }
-    case {_ {$a:ident <- $ma:expr if $e:expr return $left:expr else return $right:expr}} => {
+    case {_ {$a:ident <- $ma:expr var $($x:ident = $y:expr) (var) ... if $e:expr return $left:expr else return $right:expr }} => {
         return #{
             $ma.map(function($a) {
-                if ($e) { return $left }
-                else    { return $right }
+                $(var $x = $y;) ...
+                if ($e) {
+                    return $left
+                } else {
+                    return $right
+                }
+            });
+        };
+    }
+    case {_ {$a:ident <- $ma:expr if $e:expr return $left:expr else return $right:expr }} => {
+        return #{
+            $ma.map(function($a) {
+                if ($e) {
+                    return $left
+                } else {
+                    return $right
+                }
+            });
+        };
+    }
+    case {_ { $ma:expr var $($x:ident = $y:expr) (var) ... if $e:expr return $left:expr else return $right:expr }} => {
+        return #{
+            $ma.map(function() {
+                $(var $x = $y;) ...
+                if ($e) {
+                    return $left
+                } else {
+                    return $right
+                }
             });
         };
     }
     case {_ {$ma:expr if $e:expr return $left:expr else return $right:expr }} => {
         return #{
             $ma.map(function() {
-                if ($e) { return $left }
-                else    { return $right }
+                if ($e) {
+                    return $left
+                } else {
+                    return $right
+                }
+            });
+        };
+    }
+    case {_ {$a:ident <- $ma:expr var $($x:ident = $y:expr) (var) ... if $rest ... }} => {
+        return #{
+            $ma.chain(function($a) {
+                $(var $x = $y;) ...
+                $ifelsedo { if $rest ... }
             });
         };
     }
     case {_ {$a:ident <- $ma:expr if $rest ... }} => {
         return #{
             $ma.chain(function($a) {
+                $ifelsedo { if $rest ... }
+            });
+        };
+    }
+    case {_ {$ma:expr var $($x:ident = $y:expr) (var) ... if $rest ... }} => {
+        return #{
+            $ma.chain(function() {
+                $(var $x = $y;) ...
                 $ifelsedo { if $rest ... }
             });
         };
@@ -171,32 +244,43 @@ macro $do {
 macro $ifelsedo {
     case {_ { if $e:expr $do { $left ... } else return $right:expr }} => {
         return #{
-            if ($e) { return $do { $left ... } }
-            else    { return $right }
+            if ($e) {
+                return $do { $left ... }
+            } else {
+                return $right
+            }
         };
     }
     case {_ { if $e:expr return $left:expr else $do { $right ... } }} => {
         return #{
-            if ($e) { return $left }
-            else    { return $do { $right ... } }
+            if ($e) {
+                return $left
+            } else {
+                return $do { $right ... }
+            }
         };
     }
     case {_ { if $e:expr $do { $left ... } else $do { $right ... } }} => {
         return #{
-            if ($e) { return $do { $left ... } }
-            else    { return $do { $right ... } }
+            if ($e) {
+                return $do { $left ... }
+            } else {
+                return $do { $right ... }
+            }
         };
     }
     case {_ { if $e:expr return $left:expr else $rest ... }} => {
         return #{
-            if ($e) { return $left }
-            else $ifelsedo { $rest ... }
+            if ($e) {
+                return $left
+            } else $ifelsedo { $rest ... }
         };
     }
     case {_ { if $e:expr $do { $left ... } else $rest ... }} => {
         return #{
-            if ($e) { return $do { $left ... } }
-            else $ifelsedo { $rest ... }
+            if ($e) {
+                return $do { $left ... }
+            } else $ifelsedo { $rest ... }
         };
     }
 }
