@@ -18,7 +18,7 @@ module.exports = function (grunt) {
                     dest: 'bin/src.sjs'
                 },
                 testMacros: {
-                    src: ['test/*.js', 'bin/src.sjs'],
+                    src: ['test/*.js'],
                     dest: 'bin/test.sjs'
                 }
             },
@@ -33,6 +33,7 @@ module.exports = function (grunt) {
             },
             sweet: {
                 all: {
+                    modules: ['./bin/src.sjs'],
                     src: 'bin/test.sjs',
                     dest: 'bin/test.js'
                 }
@@ -63,8 +64,13 @@ module.exports = function (grunt) {
 
     grunt.registerMultiTask('sweet', 'Run sweet.js', function() {
         var shell = require('shelljs'),
-            options = this.data;
-        shell.exec('sjs -o ' + options.dest + ' ' + options.src);
+            options = this.data,
+            modules = (options.modules || []).map(function(s){
+                        return '-m ' + JSON.stringify(s);
+                      }).join(' ');
+
+        console.log('sjs ' + modules + ' -o ' + options.dest + ' ' + options.src);
+        shell.exec('./node_modules/.bin/sjs ' + modules + ' -o ' + options.dest + ' ' + options.src);
     });
 
     grunt.registerTask('default', ['macro']);

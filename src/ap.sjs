@@ -19,3 +19,5 @@ macro $ap {
         }
     }
 }
+
+export $ap;

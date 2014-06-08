@@ -47,3 +47,5 @@ macro $kleisli {
         }
     }
 }
+
+export $kleisli;

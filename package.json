@@ -16,17 +16,18 @@
     "test": "grunt"
   },
   "devDependencies": {
-    "grunt-cli": "0.1.9",
+    "daggy": "0.0.1",
+    "fantasy-check": "0.x.x",
+    "fantasy-combinators": "0.x.x",
+    "fantasy-identities": "0.x.x",
+    "fantasy-options": "0.x.x",
     "grunt": "0.4.x",
-    "grunt-rigger": "0.5.x",
+    "grunt-cli": "0.1.9",
     "grunt-contrib-concat": "0.3.0",
     "grunt-contrib-jshint": "0.6.x",
     "grunt-contrib-nodeunit": "0.2.0",
+    "grunt-rigger": "0.5.x",
     "shelljs": "0.2.x",
-    "sweet.js": "0.2.x",
-    "fantasy-check": "0.x.x",
-    "fantasy-identities": "0.x.x",
-    "fantasy-options": "0.x.x",
-    "fantasy-combinators": "0.x.x"
+    "sweet.js": "0.2.x"
   }
 }

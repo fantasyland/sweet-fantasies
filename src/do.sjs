@@ -284,3 +284,5 @@ macro $ifelsedo {
         };
     }
 }
+
+export $do
