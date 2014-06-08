@@ -10,3 +10,5 @@ macro $semigroup {
         };
     }
 }
+
+export $semigroup;
