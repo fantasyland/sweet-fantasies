@@ -20,7 +20,7 @@
 
 */
 macro $kleisli {
-    case {_ ($x:expr >=> $e ...) > $y:expr $rest ... } => {
+    case {_ ($x >=> $e ...) > $y:expr $rest ... } => {
         return #{
             function(a) {
                 return $x(a) $kleisli {$e ...}
@@ -28,7 +28,7 @@ macro $kleisli {
             $rest ...
         }
     }
-    case {_ ($x:expr >=> $e ...) $rest ... } => {
+    case {_ ($x >=> $e ...) $rest ... } => {
         return #{
             function(a) {
                 return $x(a) $kleisli {$e ...}
@@ -48,4 +48,4 @@ macro $kleisli {
     }
 }
 
-export $kleisli;
+export $kleisli

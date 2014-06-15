@@ -69,8 +69,8 @@ module.exports = function (grunt) {
                         return '-m ' + JSON.stringify(s);
                       }).join(' ');
 
-        console.log('sjs ' + modules + ' -o ' + options.dest + ' ' + options.src);
-        shell.exec('./node_modules/.bin/sjs ' + modules + ' -o ' + options.dest + ' ' + options.src);
+        console.log('sjs -r' + modules + ' -o ' + options.dest + ' ' + options.src);
+        shell.exec('./node_modules/.bin/sjs -r ' + modules + ' -o ' + options.dest + ' ' + options.src);
     });
 
     grunt.registerTask('default', ['macro']);

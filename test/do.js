@@ -8,7 +8,7 @@ exports.donotation = {
                 x <- Identity.of(a)
                 y <- Identity.of(b)
                 return x + y
-            }
+            }.map(function(a){ return a });
             return sum.x === a + b;
         },
         [String, String]
@@ -194,5 +194,16 @@ exports.donotation = {
             return sum.x === a + a + b + c;
         },
         [String, String, String]
+    ),
+    'supports an action as the last expression': λ.check(
+        function(a, b) {
+            var sum = $do {
+                x <- Identity.of(a)
+                y <- Identity.of(b)
+                Identity.of(x + y)
+            }
+            return sum.x === a + b;
+        },
+        [String, String]
     )
 };
