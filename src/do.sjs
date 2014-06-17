@@ -45,14 +45,16 @@ macro $do {
 
 macroclass binding {
   pattern { $id:ident <- $op:expr; } 
-  pattern { $id:ident <- $op:expr }
+  pattern { $id:ident <- $op:expr  }
   pattern { $op:expr; } where ($id = #{ _it })
-  pattern { $op:expr }  where ($id = #{ _it })
+  pattern { $op:expr  } where ($id = #{ _it })
 }
 
-macroclass ifelsedo {
-  pattern { if ( $test:expr ) $consequent:expr else $alternative:expr; }
-  pattern { if ( $test:expr ) $consequent:expr else $alternative:expr }
+macroclass pureBinding {
+  pattern { $id:ident <- return $value:expr; }
+  pattern { $id:ident <- return $value:expr }
+  pattern { return $value:expr; } where ($id = #{ _it })
+  pattern { return $value:expr  } where ($id = #{ _it })
 }
 
 macroclass vardecl {
@@ -60,110 +62,43 @@ macroclass vardecl {
   pattern { var $id:ident = $value:expr  }
 }
 
+macro returnableExpr {
+  rule { $e:expr } => { $e }
+  rule { return $e:expr } => { return $e }
+}
+
+macroclass ifelsedo {
+  pattern { if ( $test:expr ) $consequent:returnableExpr else $alternative:returnableExpr; }
+  pattern { if ( $test:expr ) $consequent:returnableExpr else $alternative:returnableExpr }
+}
+
 macro _do {
   // -- Base cases -----------------------------------------------------
-
-  // a <- b; return a | a; return b
-  rule {{ $a:binding return $b:expr }} => {
-    return $a$op.map(function($a$id) {
-      return $b;
-    })
-  }
-
-  // a <-b; return if (a) b else c
-  rule {{ $a:binding return $b:ifelsedo }} => {
-    return $a$op.map(function($a$id) {
-      if ($b$test) {
-        return $b$consequent;
-      } else {
-        return $b$alternative;
-      }
-    })
-  }
-
-  // if (a) b else c; return x
-  rule {{ $a:ifelsedo return $b:expr }} => {
-    if ($a$test) {
-      _do { $a$consequent return $b }
-    } else {
-      _do { $a$alternative return $b }
-    }
-  }
-
-  // a <- b; if (a) return b else return c
-  rule {{ $e:binding if ( $a:expr ) return $b:expr else return $c:expr }} => {
-    return $e$op.map(function($e$id) {
-      if ($a) {
-        return $b;
-      } else {
-        return $c;
-      }
-    })
-  }
-
-  // a <- b; var x = y ...; if (a) return b else return c
-  rule {{ $e:binding $vars:vardecl ... if ( $a:expr ) return $b:expr else return $c:expr }} => {
-    return $e$op.map(function($e$id) {
-      $(var $vars$id = $vars$value;) ...
-      if ($a) {
-        return $b;
-      } else {
-        return $c;
-      }
-    })
-  }
-
-  // a <- b; var x = y ...; return d
-  rule {{ $a:binding $vars:vardecl ... return $b:expr }} => {
-    return $a$op.map(function($a$id) {
-      $(var $vars$id = $vars$value;) ...
-      return $b;
-    })
-  }
-
-  // a <-b; var x = y ...; return if ...
-  rule {{ $a:binding $vars:vardecl ... return $b:ifelsedo }} => {
-    return $a$op.map(function($a$id) {
-      $(var $vars$id = $vars$value;) ...
-      if ($b$test) {
-        return $b$consequent;
-      } else {
-        return $b$alternative;
-      }
-    })
-  }
-
-  // if (a) b else c; var x = y ...; return d
-  rule {{ $a:ifelsedo $vars:vardecl ... return $b:expr }} => {
-    $(var $vars$id = $vars$value;) ...
-    if ($a$test) {
-      _do { $a$consequent return $b }
-    } else {
-      _do { $a$alternative return $b }
-    }
-  }
-
-  // a()
   rule {{ $op:expr }} => {
-    return $op;
+    return $op
+  }
+  rule { $type { $op:expr }} => {
+    return $op
+  }
+  rule { $type { return $a:expr }} => {
+    return $type.of($a)
+  }
+  rule { $type { return if ( $a:expr ) $b:expr else $c:expr }} => {
+    if ($a) {
+      _do $type { return $b }
+    } else {
+      _do $type { return $c }
+    }
   }
 
   // -- Stepping cases -------------------------------------------------
-
-  // a; ... | a <- b; ...
-  rule {{ $a:binding $rest ... }} => {
-    return $a$op.chain(function($a$id) {
-      _do { $rest ... }
-    })
+  rule { $type { $a:ifelsedo $rest ... }} => {
+    if ($a$test) {
+      _do $type { $a$consequent $rest ... }
+    } else {
+      _do $type { $a$alternative $rest ... }
+    }
   }
-
-  // var x = y; ...
-  rule {{ var $id:ident = $value:expr $rest ... }} => {
-    var $id = $value;
-    _do { $rest ... }
-  }
-
-  // if (a) b else c; ...
   rule {{ $a:ifelsedo $rest ... }} => {
     if ($a$test) {
       _do { $a$consequent $rest ... }
@@ -172,11 +107,38 @@ macro _do {
     }
   }
 
-  
-  
+  rule { $type { $a:pureBinding $rest ... }} => {
+    return $type.of($a$value).chain(function($a$id) {
+      _do $type { $rest ... }
+    })
+  }
+
+  rule {{ $a:binding $rest ... }} => {
+    var $do$op   = $a$op;
+    var $do$type = $do$op.of || $do$op.constructor.of;
+    return $do$op.chain(function($a$id) {
+      _do $do$type { $rest ... }
+    })
+  }
+  rule { $type { $a:binding $rest ... }} => {
+    return $a$op.chain(function($a$id) {
+      _do $type { $rest ... }
+    })
+  }
+
+  rule { $type { $var:vardecl $rest ... }} => {
+    var $var$id = $var$value;
+    _do $type { $rest ... }
+  }
+  rule {{ $var:vardecl $rest ... }} => {
+    var $var$id = $var$value;
+    _do { $rest ... }
+  }
+
+
   // -- Things we ignore -----------------------------------------------
-  rule { { ; $a ... } } => { _do { $a ... } }
-  rule { { } } => { }
+  rule { $type { ; $a ... } } => { _do { $a ... } }
+  rule { $type { } } => { }
 }
 
 export $do
