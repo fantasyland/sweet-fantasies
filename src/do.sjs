@@ -81,7 +81,7 @@ macro _do {
     return $op
   }
   rule { $type { return $a:expr }} => {
-    return $type.of($a)
+    return $type($a)
   }
   rule { $type { return if ( $a:expr ) $b:expr else $c:expr }} => {
     if ($a) {
@@ -108,7 +108,7 @@ macro _do {
   }
 
   rule { $type { $a:pureBinding $rest ... }} => {
-    return $type.of($a$value).chain(function($a$id) {
+    return $type($a$value).chain(function($a$id) {
       _do $type { $rest ... }
     })
   }
