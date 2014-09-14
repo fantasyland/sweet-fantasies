@@ -22,7 +22,7 @@
 
    $do {
      x <- foo
-     k = 10
+     var k = 10
      y <- bar(x)
      z <- baz
      return x * y * z * k
