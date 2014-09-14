@@ -74,16 +74,16 @@ macroclass ifelsedo {
 
 macro _do {
   // -- Base cases -----------------------------------------------------
-  rule {{ $op:expr }} => {
+  rule {{ $op:expr ; ... }} => {
     return $op
   }
-  rule { $type { $op:expr }} => {
+  rule { $type { $op:expr ; ... }} => {
     return $op
   }
-  rule { $type { return $a:expr }} => {
+  rule { $type { return $a:expr ; ... }} => {
     return $type($a)
   }
-  rule { $type { return if ( $a:expr ) $b:expr else $c:expr }} => {
+  rule { $type { return if ( $a:expr ) $b:expr ; ... else $c:expr ; ... }} => {
     if ($a) {
       _do $type { return $b }
     } else {
