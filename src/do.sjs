@@ -8,19 +8,21 @@
 
    Desugars into:
 
-   foo.chain(function(x) { 
-     return bar.chain(function(y) { 
-       return baz.map(function(z) { 
-         return x * y * z 
-       }) 
+   (function(){
+     return foo.chain(function(x) { 
+       return bar.chain(function(y) { 
+         return baz.map(function(z) { 
+           return x * y * z 
+         }) 
+       })
      })
-   })
+   }())
 
    var-bindings are supported too:
 
    $do {
      x <- foo
-     k = 10
+     var k = 10
      y <- bar(x)
      z <- baz
      return x * y * z * k
@@ -30,257 +32,141 @@
 
    $do {
      putStrLn("Hello friend! What's your name?")
-     name <- readLine()
-     return name
+     readLine()
    }
 
-   TODO:
-  
-    - do not require last expression to be 'return'
-
 */
+
 macro $do {
-    case {_ {$a:ident <- $do { $doBlock ... } var $($x:ident = $y:expr) (var) ... return $b:expr }} => {
-        return #{
-            function() {
-                var ma = $do { $doBlock ... }
-                return ma.map(function($a) {
-                    $(var $x = $y;) ...
-                    return $b
-                });
-            }()
-        };
-    }
-    case {_ {$a:ident <- $do { $doBlock ... } return $b:expr }} => {
-        return #{
-            function() {
-                var ma = $do { $doBlock ... }
-                return ma.map(function($a) {
-                    return $b
-                });
-            }()
-        };
-    }
-    case {_ {$a:ident <- $do { $doBlock ... } $rest ... }} => {
-        return #{
-            function() {
-                var ma = $do { $doBlock ... }
-                return ma.chain(function($a) {
-                    return $do { $rest ... }
-                });
-            }()
-        };
-    }
-    case {_ {var $($x:ident = $y:expr) (var) ... $rest ... }} => {
-        return #{
-            function() {
-                $(var $x = $y;) ...
-                return $do { $rest ... }
-            }()
-        };
-    }
-    case {_ {$a:ident <- $ma:expr var $($x:ident = $y:expr) (var) ... return $b:expr }} => {
-        return #{
-            $ma.map(function($a) {
-                $(var $x = $y;) ...
-                return $b;
-            });
-        };
-    }
-    case {_ {$a:ident <- $ma:expr return $b:expr }} => {
-        return #{
-            $ma.map(function($a) {
-                return $b;
-            });
-        };
-    }
-    case {_ {$a:ident <- $ma:expr var $($x:ident = $y:expr) (var) ... return if $rest ...}} => {
-        return #{
-            $ma.map(function($a) {
-                $(var $x = $y;) ...
-                $ifelsedo { if $rest ... }
-            });
-        };
-    }
-    case {_ {$a:ident <- $ma:expr return if $rest ...}} => {
-        return #{
-            $ma.map(function($a) {
-                $ifelsedo { if $rest ... }
-            });
-        };
-    }
-    case {_ {$ma:expr var $($x:ident = $y:expr) (var) ... return $b:expr}} => {
-        return #{
-            $ma.map(function() {
-                $(var $x = $y;) ...
-                return $b;
-            });
-        };
-    }
-    case {_ {$ma:expr return $b:expr}} => {
-        return #{
-            $ma.map(function() {
-                return $b;
-            });
-        };
-    }
-    case {_ {$a:ident <- $ma:expr var $($x:ident = $y:expr) (var) ... if $e:expr return $left:expr else return $right:expr }} => {
-        return #{
-            $ma.map(function($a) {
-                $(var $x = $y;) ...
-                if ($e) {
-                    return $left
-                } else {
-                    return $right
-                }
-            });
-        };
-    }
-    case {_ {$a:ident <- $ma:expr if $e:expr return $left:expr else return $right:expr }} => {
-        return #{
-            $ma.map(function($a) {
-                if ($e) {
-                    return $left
-                } else {
-                    return $right
-                }
-            });
-        };
-    }
-    case {_ { $ma:expr var $($x:ident = $y:expr) (var) ... if $e:expr return $left:expr else return $right:expr }} => {
-        return #{
-            $ma.map(function() {
-                $(var $x = $y;) ...
-                if ($e) {
-                    return $left
-                } else {
-                    return $right
-                }
-            });
-        };
-    }
-    case {_ {$ma:expr if $e:expr return $left:expr else return $right:expr }} => {
-        return #{
-            $ma.map(function() {
-                if ($e) {
-                    return $left
-                } else {
-                    return $right
-                }
-            });
-        };
-    }
-    case {_ {$a:ident <- $ma:expr var $($x:ident = $y:expr) (var) ... if $rest ... }} => {
-        return #{
-            $ma.chain(function($a) {
-                $(var $x = $y;) ...
-                $ifelsedo { if $rest ... }
-            });
-        };
-    }
-    case {_ {$a:ident <- $ma:expr if $rest ... }} => {
-        return #{
-            $ma.chain(function($a) {
-                $ifelsedo { if $rest ... }
-            });
-        };
-    }
-    case {_ {$ma:expr var $($x:ident = $y:expr) (var) ... if $rest ... }} => {
-        return #{
-            $ma.chain(function() {
-                $(var $x = $y;) ...
-                $ifelsedo { if $rest ... }
-            });
-        };
-    }
-    case {_ {$ma:expr if $rest ... }} => {
-        return #{
-            $ma.chain(function() {
-                $ifelsedo { if $rest ... }
-            });
-        };
-    }
-    case {_ {$a:ident <- $ma:expr $rest ... }} => {
-        return #{
-            $ma.chain(function($a) {
-                return $do { $rest ... }
-            });
-        };
-    }
-    case {_ {$ma:expr $rest ... }} => {
-        return #{
-            $ma.chain(function() {
-                return $do { $rest ... }
-            });
-        };
-    }
+  rule {{ $a ... }} => {
+    (function(){ _do { $a ... } }())
+  }
 }
 
-/*
-   $do {
-     a <- foo
-     if (a == 1) $do {
-       b <- bar
-       return b
-     } else $do {
-       c <- quux
-       return c
-     }
-   }
-
-   foo.map(function (a$2) {
-     if (a$2 == 1) {
-       return bar.map(function (b$6) {
-         return b$6;
-       });
-     } else {
-       return quux.map(function (c$9) {
-         return c$9;
-       });
-     }
-   });
-
-*/
-macro $ifelsedo {
-    case {_ { if $e:expr $do { $left ... } else return $right:expr }} => {
-        return #{
-            if ($e) {
-                return $do { $left ... }
-            } else {
-                return $right
-            }
-        };
-    }
-    case {_ { if $e:expr return $left:expr else $do { $right ... } }} => {
-        return #{
-            if ($e) {
-                return $left
-            } else {
-                return $do { $right ... }
-            }
-        };
-    }
-    case {_ { if $e:expr $do { $left ... } else $do { $right ... } }} => {
-        return #{
-            if ($e) {
-                return $do { $left ... }
-            } else {
-                return $do { $right ... }
-            }
-        };
-    }
-    case {_ { if $e:expr return $left:expr else $rest ... }} => {
-        return #{
-            if ($e) {
-                return $left
-            } else $ifelsedo { $rest ... }
-        };
-    }
-    case {_ { if $e:expr $do { $left ... } else $rest ... }} => {
-        return #{
-            if ($e) {
-                return $do { $left ... }
-            } else $ifelsedo { $rest ... }
-        };
-    }
+macroclass binding {
+  pattern {
+    rule { $id:ident <- $op:expr; }
+  } 
+  pattern {
+    rule { $id:ident <- $op:expr }
+  }
+  pattern {
+    rule { $op:expr; }
+    with $id = #{ _it }
+  }
+  pattern {
+    rule { $op:expr }
+    with $id = #{ _it }
+  }
 }
+
+macroclass pureBinding {
+  pattern {
+    rule { $id:ident <- return $value:expr; }
+  }
+  pattern {
+    rule { $id:ident <- return $value:expr }
+  }
+  pattern {
+    rule { return $value:expr; }
+    with $id = #{ _it }
+  }
+  pattern {
+    rule { return $value:expr  }
+    with $id = #{ _it }
+  }
+}
+
+macroclass vardecl {
+  pattern {
+    rule { var $id:ident = $value:expr; }
+  }
+  pattern {
+    rule { var $id:ident = $value:expr }
+  }
+}
+
+macro returnableExpr {
+  rule { $e:expr } => { $e }
+  rule { return $e:expr } => { return $e }
+}
+
+macroclass ifelsedo {
+  pattern {
+    rule { if ( $test:expr ) $consequent:returnableExpr else $alternative:returnableExpr; }
+  }
+  pattern {
+    rule { if ( $test:expr ) $consequent:returnableExpr else $alternative:returnableExpr }
+  }
+}
+
+macro _do {
+  // -- Base cases -----------------------------------------------------
+  rule {{ $op:expr ; ... }} => {
+    return $op
+  }
+  rule { $type { $op:expr ; ... }} => {
+    return $op
+  }
+  rule { $type { return $a:expr ; ... }} => {
+    return $type($a)
+  }
+  rule { $type { return if ( $a:expr ) $b:expr ; ... else $c:expr ; ... }} => {
+    if ($a) {
+      _do $type { return $b }
+    } else {
+      _do $type { return $c }
+    }
+  }
+
+  // -- Stepping cases -------------------------------------------------
+  rule { $type { $a:ifelsedo $rest ... }} => {
+    if ($a$test) {
+      _do $type { $a$consequent $rest ... }
+    } else {
+      _do $type { $a$alternative $rest ... }
+    }
+  }
+  rule {{ $a:ifelsedo $rest ... }} => {
+    if ($a$test) {
+      _do { $a$consequent $rest ... }
+    } else {
+      _do { $a$alternative $rest ... }
+    }
+  }
+
+  rule { $type { $a:pureBinding $rest ... }} => {
+    return $type($a$value).chain(function($a$id) {
+      _do $type { $rest ... }
+    })
+  }
+
+  rule {{ $a:binding $rest ... }} => {
+    var $do$op   = $a$op;
+    var $do$type = $do$op.of || $do$op.constructor.of;
+    return $do$op.chain(function($a$id) {
+      _do $do$type { $rest ... }
+    })
+  }
+  rule { $type { $a:binding $rest ... }} => {
+    return $a$op.chain(function($a$id) {
+      _do $type { $rest ... }
+    })
+  }
+
+  rule { $type { $var:vardecl $rest ... }} => {
+    var $var$id = $var$value;
+    _do $type { $rest ... }
+  }
+  rule {{ $var:vardecl $rest ... }} => {
+    var $var$id = $var$value;
+    _do { $rest ... }
+  }
+
+
+  // -- Things we ignore -----------------------------------------------
+  rule { $type { ; $a ... } } => { _do { $a ... } }
+  rule { $type { } } => { }
+}
+
+export $do

@@ -8,7 +8,7 @@ exports.donotation = {
                 x <- Identity.of(a)
                 y <- Identity.of(b)
                 return x + y
-            }
+            }.map(function(a){ return a });
             return sum.x === a + b;
         },
         [String, String]
@@ -194,5 +194,82 @@ exports.donotation = {
             return sum.x === a + a + b + c;
         },
         [String, String, String]
+    ),
+    'supports an action as the last expression': λ.check(
+        function(a, b) {
+            var sum = $do {
+                x <- Identity.of(a)
+                y <- Identity.of(b)
+                Identity.of(x + y)
+            }
+            return sum.x === a + b;
+        },
+        [String, String]
+    ),
+    'supports multiple returns': λ.check(
+        function(a, b, c) {
+            var sum = $do {
+                x <- Identity.of(a)
+                return b
+                return c
+            }
+            return sum.x === c
+        },
+        [String, String, String]
+    ),
+    'supports return in a binding expression': λ.check(
+        function(a, b) {
+            var sum = $do {
+                x <- Identity.of(a)
+                y <- return b
+                return x + y
+            }
+            return sum.x === a + b
+        },
+        [String, String]
+    ),
+    'supports semicolons to separate statements (return)': λ.check(
+        function(a, b) {
+            var sum = $do {
+                x <- Identity.of(a);
+                y <- return b;
+                return x + y;
+            }
+            return sum.x === a + b
+        },
+        [String, String]
+    ),
+    'supports semicolons to separate statements (naked op)': λ.check(
+        function(a, b) {
+            var sum = $do {
+                x <- Identity.of(a);
+                y <- return b;
+                Identity.of(x + y);
+            }
+            return sum.x === a + b
+        },
+        [String, String]
+    ),
+    'supports semicolons to separate statements (only naked op)': λ.check(
+        function(a, b) {
+            var sum = $do {
+                Identity.of(a + b);
+            }
+            return sum.x === a + b
+        },
+        [String, String]
+    ),
+    'supports semicolons to separate statements (if/else)': λ.check(
+        function(a, b) {
+            var sum = $do {
+                x <- Identity.of(a);
+                y <- return b;
+                return if (x > y) x + y;
+                       else       y + x;
+            }
+            return sum.x === ((a > b)? a + b : b + a)
+        },
+        [String, String]
     )
+  
 };
