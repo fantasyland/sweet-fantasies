@@ -44,22 +44,46 @@ macro $do {
 }
 
 macroclass binding {
-  pattern { $id:ident <- $op:expr; } 
-  pattern { $id:ident <- $op:expr  }
-  pattern { $op:expr; } where ($id = #{ _it })
-  pattern { $op:expr  } where ($id = #{ _it })
+  pattern {
+    rule { $id:ident <- $op:expr; }
+  } 
+  pattern {
+    rule { $id:ident <- $op:expr }
+  }
+  pattern {
+    rule { $op:expr; }
+    with $id = #{ _it }
+  }
+  pattern {
+    rule { $op:expr }
+    with $id = #{ _it }
+  }
 }
 
 macroclass pureBinding {
-  pattern { $id:ident <- return $value:expr; }
-  pattern { $id:ident <- return $value:expr }
-  pattern { return $value:expr; } where ($id = #{ _it })
-  pattern { return $value:expr  } where ($id = #{ _it })
+  pattern {
+    rule { $id:ident <- return $value:expr; }
+  }
+  pattern {
+    rule { $id:ident <- return $value:expr }
+  }
+  pattern {
+    rule { return $value:expr; }
+    with $id = #{ _it }
+  }
+  pattern {
+    rule { return $value:expr  }
+    with $id = #{ _it }
+  }
 }
 
 macroclass vardecl {
-  pattern { var $id:ident = $value:expr; }
-  pattern { var $id:ident = $value:expr  }
+  pattern {
+    rule { var $id:ident = $value:expr; }
+  }
+  pattern {
+    rule { var $id:ident = $value:expr }
+  }
 }
 
 macro returnableExpr {
@@ -68,8 +92,12 @@ macro returnableExpr {
 }
 
 macroclass ifelsedo {
-  pattern { if ( $test:expr ) $consequent:returnableExpr else $alternative:returnableExpr; }
-  pattern { if ( $test:expr ) $consequent:returnableExpr else $alternative:returnableExpr }
+  pattern {
+    rule { if ( $test:expr ) $consequent:returnableExpr else $alternative:returnableExpr; }
+  }
+  pattern {
+    rule { if ( $test:expr ) $consequent:returnableExpr else $alternative:returnableExpr }
+  }
 }
 
 macro _do {

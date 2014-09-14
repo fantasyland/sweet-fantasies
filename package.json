@@ -28,6 +28,6 @@
     "grunt-contrib-nodeunit": "0.2.0",
     "grunt-rigger": "0.5.x",
     "shelljs": "0.2.x",
-    "sweet.js": "^0.6.0"
+    "sweet.js": "~0.7.1"
   }
 }
